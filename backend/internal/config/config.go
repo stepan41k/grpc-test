@@ -24,7 +24,7 @@ type PostgreConfig struct {
 }
 
 type ServerConfig struct {
-	Port            string        `yaml:"port"`
+	GRPCPort            string        `yaml:"port"`
 	Timeout         time.Duration `yaml:"timeout"`
 	IdleTimeout     time.Duration `yaml:"idle_timeout"`
 	AccessTokenTTL  time.Duration `yaml:"access_token_ttl"`
