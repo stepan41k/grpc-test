@@ -1,8 +1,25 @@
 package handler
 
+import (
+	"context"
+
+	"github.com/sudo-odner/minor/backend/services/auth_service/internal/service"
+	pb "github.com/sudo-odner/minor/backend/services/auth_service/pkg/exchange_v1"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type Exchange interface {
+	GetRates(ctx context.Context, req *pb.GetRatesRequest) (*pb.GetRatesResponse, error)
+}
+
 type ExchangeHandler struct {
     pb.UnimplementedExchangeServiceServer
-    service *service.ExchangeService // Ссылка на бизнес-логику
+    exchange Exchange
+}
+
+func Register(gRPCServer *grpc.Server, exchange Exchange) {
+	pb.RegisterExchangeServiceServer(gRPCServer, &ExchangeHandler{exchange: exchange})
 }
 
 func (h *ExchangeHandler) GetRates(ctx context.Context, req *pb.GetRatesRequest) (*pb.GetRatesResponse, error) {
