@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: usdt_rates_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-pass}
+      POSTGRES_DB: ${DB_NAME:-rates_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d rates_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686" # Web UI
+      - "4317:4317"   
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: usdt_rates_app
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "50051:50051" # gRPC порт
+    environment:
+      - DB_URL=postgres://user:pass@db:5432/rates_db?sslmode=disable
+      - GRPC_PORT=:50051
+
+      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
+      - SERVICE_NAME=usdt-rates-service
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
