@@ -1,0 +1,15 @@
+env: "local"
+
+psql:
+    username: "someuser"
+    host: "somehost"
+    port: "someport"
+    dbname: "somedbname"
+    sslmode: "disable"
+
+http_server:
+    port: "someport"
+    timeout: 10s
+    idle_timeout: 60s
+    access_token_ttl: 15m
+    refresh_token_ttl: 43200m
