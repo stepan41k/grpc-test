@@ -1,6 +1,6 @@
-.PHONY: build test cover docker-build compose-up compose-down lint proto migrate-create
+.PHONY: build test cover docker-build run stop lint proto migrate-create
 
-APP_NAME = usdt-rated-service
+APP_NAME = usdt-rate-service
 PROTO_DIR = api/proto/exchange/v1
 OUT_DIR = .
 MIGRATIONS_DIR = migrations
@@ -17,11 +17,11 @@ cover:
 docker-build:
 	docker build -t $(APP_NAME):latest .
 
-compose-up:
-	cd ../deploy && docker-compose up --build
-	
-compose-down:
-	cd ../deploy && docker-compose down -v
+run:
+	docker-compose up --build
+
+stop:
+	docker-compose down -v
 
 lint:
 	golangci-lint run ./...
