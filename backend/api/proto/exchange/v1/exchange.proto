@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package exchange.v1;
+
+option go_package = "internal/grpc/pb";
+
+service ExchangeService {
+    rpc GetRates(GetRatesRequest) returns (GetRatesResponse);
+    rpc Check(CheckRequest) returns (CheckResponse);
+}
+
+message GetRatesRequest {
+    int32 top_n_index = 1;
+    int32 avg_n = 2;
+    int32 avg_m = 3;
+}
+
+message GetRatesResponse {
+    double top_n_price = 1;
+    double avg_nm_price = 2;
+    google.protobuf.Timestamp timestamp = 3;
+}
+
+message CheckRequest {}
+message CheckResponse {
+    string status = 1;
+}
