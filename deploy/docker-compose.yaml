@@ -1,56 +1,78 @@
-version: '3.8'
+# version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: usdt_rates_db
-    restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER:-user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-pass}
-      POSTGRES_DB: ${DB_NAME:-rates_db}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d rates_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    db:
+        image: postgres:15-alpine
+        container_name: db_postgres
+        restart: always
+        environment:
+            - POSTGRES_USER=user
+            - POSTGRES_PASSWORD=12345678
+            - POSTGRES_DB=rates
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: [ "CMD-SHELL", "pg_isready -U user -d rates" ]
+            interval: 5s
+            timeout: 5s
+            retries: 5
 
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: jaeger
-    ports:
-      - "16686:16686" # Web UI
-      - "4317:4317"   
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
+    migrator:
+        image: migrate/migrate
+        volumes:
+            - ../backend/migrations:/migrations:Z
+        depends_on:
+            db:
+                condition: service_healthy
+        command: -path=/migrations/ -database "postgres://user:12345678@db:5432/rates?sslmode=disable" up
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: usdt_rates_app
-    restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "50051:50051" # gRPC порт
-    environment:
-      - DB_URL=postgres://user:pass@db:5432/rates_db?sslmode=disable
-      - GRPC_PORT=:50051
+    jaeger:
+        image: jaegertracing/all-in-one:latest
+        container_name: jaeger
+        ports:
+            - "16686:16686"
+            - "4317:4317"
+        environment:
+            - COLLECTOR_OTLP_ENABLED=true
 
-      - OTEL_EXPORTER_OTLP_ENDPOINT=jaeger:4317
-      - SERVICE_NAME=usdt-rates-service
-    networks:
-      - app-network
+    prometheus:
+        image: prom/prometheus:latest
+        container_name: prometheus
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml:Z
+        ports:
+            - "9090:9090"
 
-networks:
-  app-network:
-    driver: bridge
+    app:
+        build:
+            context: ../backend
+            dockerfile: Dockerfile
+        # command: ["./main", "-pg-host=db", "-pg-port=5432", "-pg-user=user", "-pg-dbname=rates", "-pg-password=12345678", "pg-sslmode=disable"]
+        container_name: rates_app
+        restart: always
+        depends_on:
+            migrator:
+                condition: service_completed_successfully
+        ports:
+            - "50051:50051"
+            - "9091:9090"
+        environment:
+            - GRINEX_URL=https://grinex.io
+            - ENV=local
+            
+            - PG_USERNAME=user
+            - PG_PASSWORD=12345678
+            - PG_HOST=db
+            - PG_PORT=5432
+            - PG_DBNAME=rates
+            - PG_SSLMODE=disable
+            
+            - GRPC_PORT=50051
+            
+            - OTEL_EXPORTER=jaeger:4317
+            - OTEL_SERVICE_NAME=usdt-rates-service
 
 volumes:
-  postgres_data:
+    postgres_data:
