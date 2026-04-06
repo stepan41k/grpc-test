@@ -23,7 +23,7 @@ type PostgreConfig struct {
 	Port     string `env:"PG_PORT" env-default:"5432"`
 	DBName   string `env:"PG_DBNAME" env-default:"rates"`
 	SSLMode  string `env:"PG_SSLMODE" env-default:"disable"`
-	Password string `env:"PG_PASSWORD" env-default:"12345678"`
+	Password string `env:"PG_PASSWORD"`
 }
 
 type ServerConfig struct {
