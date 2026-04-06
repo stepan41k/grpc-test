@@ -7,7 +7,6 @@ import (
 
 	"github.com/stepan41k/grpc-test/internal/app"
 	"github.com/stepan41k/grpc-test/internal/config"
-	"github.com/stepan41k/grpc-test/internal/tracing"
 	"go.uber.org/zap"
 )
 
@@ -26,17 +25,6 @@ func main() {
 
 	ctx := context.Background()
 
-	tp, err := tracing.InitTracer(ctx, cfg.OtelConfig.ServiceName, cfg.OtelConfig.URL)
-	if err != nil {
-		panic(err)
-	}
-	defer func() {
-		err = tp.Shutdown(ctx)
-		if err != nil {
-			panic("failed to shutdown tracer")
-		}
-	}()
-
 	application := app.New(ctx, log, cfg)
 
 	go func() {
@@ -51,12 +39,8 @@ func main() {
 	<-ctx.Done()
 
 	log.Warn("stopping application")
-
-	// simple HTTP graceful shutdown
-	// shutdownCtx, cancel := context.WithTimeout(context.Background(), 30 * time.Second)
-	// defer cancel()
-
-	application.GRPCServer.Stop()
+	
+	application.Close(ctx)
 
 	log.Info("application stopped")
 }
