@@ -7,14 +7,32 @@
 - **gRPC API**: Метод GetRates для получения цен Ask/Bid и timestamp.
     
 - **Статистика**: Расчет значения конкретной позиции (topN) и среднего значения в диапазоне (avgNM).
-    
+
+<img width="1058" height="337" alt="image" src="https://github.com/user-attachments/assets/1e1d070d-9f5c-4514-9231-474407aae035" />
+
 - **Хранение данных**: Автоматическое сохранение каждой полученной котировки в базу данных PostgreSQL.
+<img width="806" height="190" alt="image" src="https://github.com/user-attachments/assets/1712fffe-fdf2-4536-9ff0-f9c294c57b07" />
     
 - **Observability**:
     
     - Трассировка запросов через **OpenTelemetry** и **Jaeger**.
-        
+      <img width="1920" height="568" alt="image" src="https://github.com/user-attachments/assets/0e41ca60-ccd4-4f3e-a3f3-9a3f4c70dc84" />
+  
     - Сбор метрик (gRPC, Go Runtime, бизнес-метрики) через **Prometheus**.
+    
+        - Пример метрик:
+            - go_memstats_alloc_bytes - Потребление оперативной памяти приложением.
+              <img width="1891" height="648" alt="image" src="https://github.com/user-attachments/assets/6e572f20-a3c4-45cc-9757-9222f24e8e6f" />
+            - grpc_server_handling_seconds_bucket - Гистограмма времени обработки запроса.
+              <img width="1885" height="737" alt="image" src="https://github.com/user-attachments/assets/73b9b85c-2c59-4590-9034-3bca06ef1add" />
+            - go_goroutines - Количество запущенных горутин.
+              <img width="1890" height="646" alt="image" src="https://github.com/user-attachments/assets/2852c964-5ed7-4c6e-988c-5ccb44caabd9" />
+            - grpc_server_handled_total - Общее количество обработанных gRPC вызовов.
+              <img width="1890" height="646" alt="image" src="https://github.com/user-attachments/assets/4a816f76-9a00-464b-858c-6248038681a6" />
+            - grinex_api_requests_total - Количество запросов к API биржи.
+              <img width="1890" height="646" alt="image" src="https://github.com/user-attachments/assets/99d4d78c-4050-4000-8158-0af8f0e66282" />
+            - usdt_current_price - Бизнес-метрика отслеживания текущего курса.
+              <img width="1890" height="646" alt="image" src="https://github.com/user-attachments/assets/29de7860-e615-4815-a9c4-83d1d970e7b6" />
         
 - **Healthcheck**: Встроенный механизм проверки работоспособности сервиса.
     
@@ -70,7 +88,9 @@ make run
 2. Переменные окружения (.env файл).
     
 3. Значения по умолчанию.
-    
+
+Закоментированная строка представляет пример запуска с флагами
+<img width="1236" height="234" alt="image" src="https://github.com/user-attachments/assets/278de46e-b0a7-444e-a724-46ecedd0513b" />
 
 ### Параметры подключения
 
@@ -111,7 +131,7 @@ make run
     
 - make proto — Генерация Go-кода из .proto файлов.
 
-- make migrate — Генерация файлов миграции, которые состоят из текущей даты и введенного названия.
+- make migrate-create — Генерация файлов миграции, которые состоят из текущей даты и введенного названия.
 
 
 
