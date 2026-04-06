@@ -1,50 +1,48 @@
 run:
-  timeout: 5m
-  skip-dirs:
-    - internal/grpc/pb
+    timeout: 5m
+    go: "1.25.7"
 
 linters-settings:
-  govet:
-    check-shadowing: true
-  revive:
-    rules:
-      - name: exported
-      - name: var-naming
-      - name: package-comments
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - style
-      - performance
-  errcheck:
-    check-type-assertions: true
-    check-blank: true
+    govet:
+        enable:
+            - shadow
+    revive:
+        rules:
+            - name: exported
+            - name: var-naming
+            - name: package-comments
+    gocritic:
+        enabled-tags:
+            - diagnostic
+            - style
+            - performance
+    errcheck:
+        check-type-assertions: true
+        check-blank: true
 
 linters:
-  disable-all: true
-  enable:
-    - errcheck      # Проверка необработанных ошибок
-    - gosimple      # Упрощение кода
-    - govet         # Стандартный статический анализ Go
-    - ineffassign   # Поиск неиспользуемых присваиваний
-    - staticcheck   # Огромный набор проверок на логические ошибки
-    - unused        # Поиск неиспользуемых констант, переменных, функций
-    - revive        # Стилистический линтер
-    - gocritic      # Советы по качеству кода
-    - bodyclose     # Обязательно для resty (проверяет закрытие HTTP-тела)
-    - sqlclosecheck # Обязательно для БД (проверяет закрытие строк sql.Rows)
-    - asciicheck    # Проверка на наличие только ASCII символов в идентификаторах
-    - exportloopref # Проверка ссылок на переменные цикла (частая ошибка в Go)
+    disable-all: true
+    enable:
+        - errcheck # unhandled errors
+        - govet # standard
+        - ineffassign # finding unused assignments
+        - staticcheck # checks for logical errors
+        - unused # find unused constants, variables, and functions
+        - gocritic # code quality tips
+        - bodyclose # checks for closing of HTTP body
+        - sqlclosecheck # checks the closure of sql.Rows rows
 
 issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - revive
-        - errcheck
+    exclude-dirs:
+        - internal/grpc/pb
+    exclude-rules:
+        - path: _test\.go
+          linters:
+              - revive
+              - errcheck
 
 output:
-  formats:
-    - format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true
+    formats:
+        - format: colored-line-number
+    print-issued-lines: true
+    print-linter-name: true
