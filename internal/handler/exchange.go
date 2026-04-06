@@ -34,11 +34,15 @@ func (eh *ExchangeHandler) GetRates(ctx context.Context, req *pb.GetRatesRequest
 		zap.String("path", path),
 	)
 	
+	log.Info("start attempt getting and processing rates")
+	
 	data, err := eh.exchangeService.GetAndProcessRates(ctx, int(req.TopNIndex), int(req.AvgN), int(req.AvgM))
 	if err != nil {
-		log.Warn("failed to get rates", zap.Error(err))
+		log.Error("failed to get rates", zap.Error(err))
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	
+	log.Info("got and processed rates successfully")
 	
 	// If need a human-readable format, use time.Unix(data.Timestamp, 0).UTC().Format("2006-01-02 15:04:05")
 	return &pb.GetRatesResponse{
