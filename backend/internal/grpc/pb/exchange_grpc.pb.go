@@ -19,8 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ExchangeService_GetRates_FullMethodName = "/exchange.ExchangeService/GetRates"
-	ExchangeService_Check_FullMethodName    = "/exchange.ExchangeService/Check"
+	ExchangeService_GetRates_FullMethodName = "/exchange.v1.ExchangeService/GetRates"
+	ExchangeService_Check_FullMethodName    = "/exchange.v1.ExchangeService/Check"
 )
 
 // ExchangeServiceClient is the client API for ExchangeService service.
@@ -142,7 +142,7 @@ func _ExchangeService_Check_Handler(srv interface{}, ctx context.Context, dec fu
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ExchangeService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "exchange.ExchangeService",
+	ServiceName: "exchange.v1.ExchangeService",
 	HandlerType: (*ExchangeServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
