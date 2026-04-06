@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/stepan41k/grpc-test/internal/client"
 	"github.com/stepan41k/grpc-test/internal/lib/calculate"
 	"github.com/stepan41k/grpc-test/internal/metrics"
 	"github.com/stepan41k/grpc-test/internal/model"
@@ -20,16 +19,20 @@ type ExchangRepository interface {
 	SaveRate(ctx context.Context, ask float64, bid float64, timestamp time.Time) error
 }
 
+type GrinexClient interface {
+	FetchRates(ctx context.Context) (*model.GrinexResponse, error)
+}
+
 type ExchangeService struct {
 	log                *zap.Logger
-	client             *client.GrinexClient
+	client             GrinexClient
 	exchangeRepository ExchangRepository
 }
 
-func New(log *zap.Logger, c *client.GrinexClient, exchangeRepository ExchangRepository) *ExchangeService {
+func New(log *zap.Logger, client GrinexClient, exchangeRepository ExchangRepository) *ExchangeService {
 	return &ExchangeService{
 		log:                log,
-		client:             c,
+		client:             client,
 		exchangeRepository: exchangeRepository,
 	}
 }
@@ -58,7 +61,7 @@ func (es *ExchangeService) GetAndProcessRates(ctx context.Context, topN, n, m in
 		log.Error("failed to fetch data from Grinex:", zap.Error(err))
 		return nil, err
 	}
-	
+
 	metrics.ExternalAPIRequests.WithLabelValues("success").Inc()
 
 	span.SetAttributes(attribute.Int("exchange.items_received", len(data.Asks)))
@@ -70,7 +73,7 @@ func (es *ExchangeService) GetAndProcessRates(ctx context.Context, topN, n, m in
 
 	bestAsk := data.Asks[0].Price
 	bestBid := data.Bids[0].Price
-	
+
 	metrics.LastUSDTPrice.Set(bestAsk)
 
 	log.Info("try to save rate in database")
