@@ -1,4 +1,4 @@
-.PHONY: build test docker-build compose-up compose-down lint proto migrate-create
+.PHONY: build test cover docker-build compose-up compose-down lint proto migrate-create
 
 APP_NAME = usdt-rated-service
 PROTO_DIR = api/proto/exchange/v1
@@ -10,6 +10,9 @@ build:
 
 test:
 	go test -v ./internal/...
+
+cover:
+	go test -cover ./...
 
 docker-build:
 	docker build -t $(APP_NAME):latest .
