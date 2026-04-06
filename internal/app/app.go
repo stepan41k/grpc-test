@@ -38,7 +38,7 @@ func New(ctx context.Context, log *zap.Logger, cfg *config.Config) *App {
 	go func() {
 		log.Info("starting prometheus metrics server", zap.String("addr", ":9090"))
 
-		if err = metrics.StartMetricsServer(":9090"); err != nil {
+		if err = metrics.StartMetricsServer(cfg.PrometheusConfig.Port); err != nil {
 			log.Error("prometheus metrics server failed", zap.Error(err))
 		}
 	}()
