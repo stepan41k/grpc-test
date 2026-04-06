@@ -1,7 +1,7 @@
-.PHONY: build test docker-build run lint proto migrate-create
+.PHONY: build test docker-build compose-up compose-down lint proto migrate-create
 
 APP_NAME = usdt-rated-service
-PROTO_DIR = api/proto
+PROTO_DIR = api/proto/exchange/v1
 OUT_DIR = .
 MIGRATIONS_DIR = migrations
 
@@ -14,19 +14,21 @@ test:
 docker-build:
 	docker build -t $(APP_NAME):latest .
 
-run:
-	docker-compose up
-	#docker-compose up --build
+compose-up:
+	cd ../deploy && docker-compose up --build
+	
+compose-down:
+	cd ../deploy && docker-compose down -v
 
 lint:
 	golangci-lint run ./...
 
 proto:
 	@mkdir -p internal/grpc/pb
-	protoc --proto_path=api/proto \
+	protoc --proto_path=api/proto/exchange/v1 \
 			--go_out=internal/grpc/pb --go_opt=paths=source_relative \
 			--go-grpc_out=internal/grpc/pb --go-grpc_opt=paths=source_relative \
-			api/proto/exchange.proto
+			api/proto/exchange/v1/exchange.proto
 	@echo "Proto files generated successfully."
 
 migrate-create:
