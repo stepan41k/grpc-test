@@ -176,6 +176,8 @@ make run
 - Мокирование внешних зависимостей (БД и API) для проверки бизнес-логики сервиса.
     
 - Парсинг JSON-ответов от внешнего API.
+
+<img width="547" height="651" alt="image" src="https://github.com/user-attachments/assets/34a953f4-6fbc-4ded-8119-c159d2170417" />
     
 
 ### Линтер
