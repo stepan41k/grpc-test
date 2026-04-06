@@ -43,9 +43,7 @@
 
 Самый простой способ запустить весь стек (приложение, Postgres, Jaeger, Prometheus) — использовать docker-compose:
 
-codeBash
-
-```
+```bash
 make run
 ```
 
