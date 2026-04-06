@@ -1,72 +1,88 @@
 package config
 
 import (
-	"log"
+	"flag"
+	"fmt"
 	"os"
-	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 type Config struct {
-	Env           string        `yaml:"env"`
-	PostgreConfig `yaml:"psql"`
-	ServerConfig  `yaml:"http_server"`
+	Env          string `env:"ENV" env-default:"local"`
+	PGConfig     PostgreConfig
+	ServerConfig ServerConfig
+	OtelConfig   OtelConfig
+	GrinexConfig GrinexConfig
 }
 
 type PostgreConfig struct {
-	Username string `yaml:"username"`
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	DBName   string `yaml:"dbname"`
-	SSLMode  string `yaml:"sslmode"`
+	Username string `env:"PG_USERNAME" env-default:"user"`
+	Host     string `env:"PG_HOST" env-default:"db"`
+	Port     string `env:"PG_PORT" env-default:"5432"`
+	DBName   string `env:"PG_DBNAME" env-default:"rates"`
+	SSLMode  string `env:"PG_SSLMODE" env-default:"disable"`
+	Password string `env:"PG_PASSWORD" env-default:"12345678"`
 }
 
 type ServerConfig struct {
-	GRPCPort            string        `yaml:"port"`
-	Timeout         time.Duration `yaml:"timeout"`
-	IdleTimeout     time.Duration `yaml:"idle_timeout"`
-	AccessTokenTTL  time.Duration `yaml:"access_token_ttl"`
-	RefreshTokenTTL time.Duration `yaml:"refresh_token_ttl"`
+	GRPCPort int `env:"GRPC_PORT" env-default:"50051"`
+}
+
+type OtelConfig struct {
+	URL         string `env:"OTEL_EXPORTER" env-default:"jaeger:4317"`
+	ServiceName string `env:"OTEL_SERVICE_NAME" env-default:"usdt-rates-service"`
+}
+
+type GrinexConfig struct {
+	URL string `env:"GRINEX_URL" env-default:"https://grinex.io"`
 }
 
 func MustLoad() *Config {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("error loading env variables: %s", err.Error())
-	}
-
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		log.Fatalf("config path is not set")
-	}
-
-	if _, err := os.Stat(configPath); err != nil {
-		log.Fatalf("config file does not exist: %s", err.Error())
-	}
+	// If we need to load .env file
+	// if err := godotenv.Load(); err != nil {
+	// }
 
 	var cfg Config
 
-	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("cannot read config: %s", err.Error())
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
+		panic(fmt.Sprintf("cannot read config: %s", err))
+	}
+
+	dbHostFlag := flag.String("pg-host", "", "Database host")
+	dbPortFlag := flag.String("pg-port", "", "Database host")
+	dbUserFlag := flag.String("pg-user", "", "gRPC server port")
+	dbNameFlag := flag.String("pg-dbname", "", "Database host")
+	dbPasswordFlag := flag.String("pg-password", "", "gRPC server port")
+	dbSSLModeFlag := flag.String("pg-sslmode", "", "Postgres SSL mode")
+
+	flag.Parse()
+
+	if *dbHostFlag != "" {
+		cfg.PGConfig.Host = *dbHostFlag
+	}
+	if *dbPortFlag != "" {
+		cfg.PGConfig.Port = *dbPortFlag
+	}
+	if *dbUserFlag != "" {
+		cfg.PGConfig.Username = *dbUserFlag
+	}
+	if *dbNameFlag != "" {
+		cfg.PGConfig.DBName = *dbNameFlag
+	}
+	if *dbPasswordFlag != "" {
+		cfg.PGConfig.Password = *dbPasswordFlag
+	}
+	if *dbSSLModeFlag != "" {
+		cfg.PGConfig.SSLMode = *dbSSLModeFlag
 	}
 
 	return &cfg
 }
 
-func getEnv(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
-	}
-	return defaultValue
-}
+func DTO(cfg *Config) string {
+	storage := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s", cfg.PGConfig.Host, cfg.PGConfig.Port, cfg.PGConfig.Username, cfg.PGConfig.DBName, os.Getenv("PG_PASSWORD"), cfg.PGConfig.SSLMode)
 
-func parseDuration(s string) time.Duration {
-	d, err := time.ParseDuration(s)
-	if err != nil {
-		log.Printf("invalid duration %s, using default 15m", s)
-		return 15 * time.Minute
-	}
-
-	return d
+	return storage
 }
