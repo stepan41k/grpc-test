@@ -36,6 +36,8 @@ func New(ctx context.Context, connString string) (*PGStorage, error) {
 	}, nil
 }
 
-func Close(ctx context.Context, storage *PGStorage) {
-	storage.pool.Close()
+func (pgs *PGStorage) Close(ctx context.Context) {
+	if pgs.pool != nil {
+		pgs.pool.Close()
+	}
 }
