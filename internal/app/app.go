@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"net/http"
 	"time"
 
 	grpcapp "github.com/stepan41k/grpc-test/internal/app/grpc"
@@ -21,7 +20,6 @@ type App struct {
 	GRPCServer *grpcapp.App
 	storage    *postgres.PGStorage
 	tracerProvider *sdktrace.TracerProvider
-	metricsServer  *http.Server
 	log        *zap.Logger
 }
 
@@ -40,7 +38,7 @@ func New(ctx context.Context, log *zap.Logger, cfg *config.Config) *App {
 	go func() {
 		log.Info("starting prometheus metrics server", zap.String("addr", ":9090"))
 
-		if err := metrics.StartMetricsServer(":9090"); err != nil {
+		if err = metrics.StartMetricsServer(":9090"); err != nil {
 			log.Error("prometheus metrics server failed", zap.Error(err))
 		}
 	}()
