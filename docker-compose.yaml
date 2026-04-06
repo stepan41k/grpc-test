@@ -22,7 +22,7 @@ services:
     migrator:
         image: migrate/migrate
         volumes:
-            - ../backend/migrations:/migrations:Z
+            - ./migrations:/migrations:Z
         depends_on:
             db:
                 condition: service_healthy
@@ -47,7 +47,7 @@ services:
 
     app:
         build:
-            context: ../backend
+            context: .
             dockerfile: Dockerfile
         # command: ["./main", "-pg-host=db", "-pg-port=5432", "-pg-user=user", "-pg-dbname=rates", "-pg-password=12345678", "pg-sslmode=disable"]
         container_name: rates_app
