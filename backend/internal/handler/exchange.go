@@ -2,32 +2,52 @@ package handler
 
 import (
 	"context"
+	"time"
 
-	"github.com/sudo-odner/minor/backend/services/auth_service/internal/service"
-	pb "github.com/sudo-odner/minor/backend/services/auth_service/pkg/exchange_v1"
+	"github.com/stepan41k/grpc-test/internal/grpc/pb"
+	"github.com/stepan41k/grpc-test/internal/model"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-type Exchange interface {
-	GetRates(ctx context.Context, req *pb.GetRatesRequest) (*pb.GetRatesResponse, error)
+type ExchangeService interface {
+	GetAndProcessRates(ctx context.Context, topIdx, n, m int) (*model.Result, error)
 }
 
 type ExchangeHandler struct {
-    pb.UnimplementedExchangeServiceServer
-    exchange Exchange
+	log *zap.Logger
+	pb.UnimplementedExchangeServiceServer
+	exchangeService ExchangeService
 }
 
-func Register(gRPCServer *grpc.Server, exchange Exchange) {
-	pb.RegisterExchangeServiceServer(gRPCServer, &ExchangeHandler{exchange: exchange})
+func Register(log *zap.Logger, gRPCServer *grpc.Server, exchangeService ExchangeService) {
+	pb.RegisterExchangeServiceServer(gRPCServer, &ExchangeHandler{log: log, exchangeService: exchangeService})
 }
 
-func (h *ExchangeHandler) GetRates(ctx context.Context, req *pb.GetRatesRequest) (*pb.GetRatesResponse, error) {
-    // 1. Вызываем сервис
-    res, err := h.service.ProcessRates(ctx, int(req.TopNIndex), ...)
-    if err != nil {
-        return nil, status.Error(codes.Internal, err.Error())
-    }
-    // 2. Формируем ответ
-    return &pb.GetRatesResponse{...}, nil
+func (eh *ExchangeHandler) GetRates(ctx context.Context, req *pb.GetRatesRequest) (*pb.GetRatesResponse, error) {
+	const path = "handler.exchange.GetRates"
+	
+	log := eh.log.With(
+		zap.String("path", path),
+	)
+	
+	data, err := eh.exchangeService.GetAndProcessRates(ctx, int(req.TopNIndex), int(req.AvgN), int(req.AvgM))
+	if err != nil {
+		log.Warn("failed to get rates", zap.Error(err))
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	
+	// If need a human-readable format, use time.Unix(data.Timestamp, 0).UTC().Format("2006-01-02 15:04:05")
+	return &pb.GetRatesResponse{
+		TopNPrice:  data.TopPrice,
+		AvgNmPrice: data.AvgPrice,
+		Timestamp: timestamppb.New(time.Unix(data.Timestamp, 0)),
+	}, nil
+}
+
+func (eh *ExchangeHandler) Check(ctx context.Context, req *pb.CheckRequest) (*pb.CheckResponse, error) {
+	return &pb.CheckResponse{Status: "SERVING"}, nil
 }
