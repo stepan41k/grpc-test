@@ -3,7 +3,7 @@
 services:
     db:
         image: postgres:15-alpine
-        container_name: db_postgres
+        container_name: postgres
         restart: always
         environment:
             - POSTGRES_USER=user
@@ -21,6 +21,7 @@ services:
 
     migrator:
         image: migrate/migrate
+        container_name: migrator
         volumes:
             - ./migrations:/migrations:Z
         depends_on:
@@ -59,22 +60,18 @@ services:
             - "50051:50051"
             - "9091:9090"
         environment:
-            - GRINEX_URL=https://grinex.io
-            - ENV=local
-            
-            - PG_USERNAME=user
-            - PG_PASSWORD=12345678
-            - PG_HOST=db
-            - PG_PORT=5432
-            - PG_DBNAME=rates
-            - PG_SSLMODE=disable
-            
-            - GRPC_PORT=50051
-            
-            - OTEL_EXPORTER=jaeger:4317
-            - OTEL_SERVICE_NAME=usdt-rates-service
-            
-            - METRICS_PORT=9090
+            - GRINEX_URL=${GRINEX_URL}
+            - ENV=${ENV}
+            - PG_USERNAME=${PG_USERNAME}
+            - PG_PASSWORD=${PG_PASSWORD}
+            - PG_HOST=${PG_HOST}
+            - PG_PORT=${PG_PORT}
+            - PG_DBNAME=${PG_DBNAME}
+            - PG_SSLMODE=${PG_SSLMODE}
+            - GRPC_PORT=${GRPC_PORT}
+            - OTEL_EXPORTER=${OTEL_EXPORTER}
+            - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME}
+            - METRICS_PORT=${METRICS_PORT}
 
 volumes:
     postgres_data:
