@@ -61,6 +61,8 @@ func (es *ExchangeService) GetAndProcessRates(ctx context.Context, topN, n, m in
 		log.Error("failed to fetch data from Grinex:", zap.Error(err))
 		return nil, err
 	}
+	
+	log.Info("data from Grinex API fetched successfully")
 
 	metrics.ExternalAPIRequests.WithLabelValues("success").Inc()
 
@@ -76,24 +78,32 @@ func (es *ExchangeService) GetAndProcessRates(ctx context.Context, topN, n, m in
 
 	metrics.LastUSDTPrice.Set(bestAsk)
 
-	log.Info("try to save rate in database")
+	log.Info("attempting to save rate in database")
 
 	err = es.exchangeRepository.SaveRate(ctx, bestAsk, bestBid, time.Unix(data.Timestamp, 0))
 	if err != nil {
 		log.Warn("failed to save rate into database:", zap.Error(err))
 	}
+	
+	log.Info("attempting to calculate top rate")
 
 	topPrice, err := calculate.CalculateTopN(data.Asks, topN)
 	if err != nil {
-		log.Warn("failed to calculate topN:", zap.Error(err))
+		log.Error("failed to calculate topN:", zap.Error(err))
 		return nil, err
 	}
+	
+	log.Info("top rate calculated successfully")
+	
+	log.Info("attempting to calculate average rate")
 
 	avgPrice, err := calculate.CalculateAvgNM(data.Asks, n, m)
 	if err != nil {
 		log.Warn("failed to calculate avgNM:", zap.Error(err))
 		return nil, err
 	}
+	
+	log.Info("average rate calculated successfully")
 
 	return &model.Result{
 		TopPrice:  topPrice,
