@@ -73,6 +73,8 @@ services:
             
             - OTEL_EXPORTER=jaeger:4317
             - OTEL_SERVICE_NAME=usdt-rates-service
+            
+            - METRICS_PORT=9090
 
 volumes:
     postgres_data:

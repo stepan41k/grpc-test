@@ -40,14 +40,6 @@ func (a *App) Run() error {
 		zap.Int("port", a.port),
 	)
 
-	go func() {
-		a.log.Info("starting prometheus metrics server", zap.String("addr", ":9090"))
-
-		if err := metrics.StartMetricsServer(":9090"); err != nil {
-			a.log.Error("prometheus metrics server failed", zap.Error(err))
-		}
-	}()
-
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
 	if err != nil {
 		return fmt.Errorf("%s: %w", path, err)

@@ -2,11 +2,13 @@ package app
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	grpcapp "github.com/stepan41k/grpc-test/internal/app/grpc"
 	"github.com/stepan41k/grpc-test/internal/client"
 	"github.com/stepan41k/grpc-test/internal/config"
+	"github.com/stepan41k/grpc-test/internal/metrics"
 	"github.com/stepan41k/grpc-test/internal/service"
 	"github.com/stepan41k/grpc-test/internal/storage/postgres"
 	"github.com/stepan41k/grpc-test/internal/tracing"
@@ -19,6 +21,7 @@ type App struct {
 	GRPCServer *grpcapp.App
 	storage    *postgres.PGStorage
 	tracerProvider *sdktrace.TracerProvider
+	metricsServer  *http.Server
 	log        *zap.Logger
 }
 
@@ -33,6 +36,14 @@ func New(ctx context.Context, log *zap.Logger, cfg *config.Config) *App {
 	if err != nil {
 		log.Fatal("failed to init tracer", zap.Error(err))
 	}
+	
+	go func() {
+		log.Info("starting prometheus metrics server", zap.String("addr", ":9090"))
+
+		if err := metrics.StartMetricsServer(":9090"); err != nil {
+			log.Error("prometheus metrics server failed", zap.Error(err))
+		}
+	}()
 
 	connString2 := config.DTO(cfg)
 
