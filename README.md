@@ -7,8 +7,11 @@
 - **gRPC API**: Метод GetRates для получения цен Ask/Bid и timestamp.
     
 - **Статистика**: Расчет значения конкретной позиции (topN) и среднего значения в диапазоне (avgNM).
-    
+
+- **Пример  работы**: <img width="1058" height="337" alt="image" src="https://github.com/user-attachments/assets/1e1d070d-9f5c-4514-9231-474407aae035" />
+
 - **Хранение данных**: Автоматическое сохранение каждой полученной котировки в базу данных PostgreSQL.
+<img width="806" height="190" alt="image" src="https://github.com/user-attachments/assets/1712fffe-fdf2-4536-9ff0-f9c294c57b07" />
     
 - **Observability**:
     
