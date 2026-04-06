@@ -10,11 +10,12 @@ import (
 )
 
 type Config struct {
-	Env          string `env:"ENV" env-default:"local"`
-	PGConfig     PostgreConfig
-	ServerConfig ServerConfig
-	OtelConfig   OtelConfig
-	GrinexConfig GrinexConfig
+	Env              string `env:"ENV" env-default:"local"`
+	PGConfig         PostgreConfig
+	ServerConfig     ServerConfig
+	OtelConfig       OtelConfig
+	GrinexConfig     GrinexConfig
+	PrometheusConfig PrometheusConfig
 }
 
 type PostgreConfig struct {
@@ -33,6 +34,10 @@ type ServerConfig struct {
 type OtelConfig struct {
 	URL         string `env:"OTEL_EXPORTER" env-default:"jaeger:4317"`
 	ServiceName string `env:"OTEL_SERVICE_NAME" env-default:"usdt-rates-service"`
+}
+
+type PrometheusConfig struct {
+	Port string `env:"METRICS_PORT" env-default:":9090"`
 }
 
 type GrinexConfig struct {
