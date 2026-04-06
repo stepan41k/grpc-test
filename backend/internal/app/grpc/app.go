@@ -63,16 +63,16 @@ func (a *App) Run() error {
 }
 
 func (a *App) Stop() {
-	const path = "grpcapp.Stop"
+	const path = "grpc.Stop"
 
 	log := a.log.With(
 		zap.String("op", path),
 		zap.Int("port", a.port),
 	)
 
-	log.Info("stoping grpc server")
-
+	log.Warn("stopping grpc server")
+	
 	a.gRPCServer.GracefulStop()
 
-	log.Info("server stoped")
+	log.Info("grpc server stopped successfully")
 }
